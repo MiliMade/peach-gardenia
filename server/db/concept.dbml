@@ -1,0 +1,82 @@
+// Use DBML to define your database structure
+// Docs: https://dbml.dbdiagram.io/docs
+
+Project peach_gardenia {
+  database_type: 'sqlite'
+  Note: 'This DB offers case workers a way of creating wishlists for children in foster care which allows people to purchase items on the care worker/childs behalf.'
+}
+
+Table nouns {
+  organisation _
+  case_worker _
+  buyer _
+  wish_list _
+  wish_list_item _
+}
+
+Table verbs {
+  log_into "allow case_worker or helper to log into their profile"
+  create "case_worker can create wishlist"
+  add "case_worker can add item to wishlist"
+  remove "case_worker can remove item from wishlist"
+  view_for_carer "Allow case_worker to view associated wishlist with read/write privileges"
+  view_for_helper "Helper can view all wishlists (readonly)."
+}
+
+Table organisation {
+  id integer [pk, increment]
+  name varchar
+  // find address through organisation_address join
+  email varchar
+  tel varchar
+}
+
+Table organisation_address {
+  id integer [pk, increment]
+  organisation foreign_key
+  name varchar
+  street_num integer
+  street_name varchar
+  city varchar
+  state_county varchar
+  zip_post_code varchar
+  country varchar
+  is_shipping bool
+  is_billing bool
+}
+
+Table case_worker {
+  id integer [pk, increment]
+  organisation foreign_key
+  first_name varchar
+  last_name varchar
+  email varchar
+  tel varchar(15)
+}
+
+Table wish_list {
+  id integer [pk, increment]
+  case_worker foreign_key
+  wish_list_url varchar
+}
+
+Table wish_item {
+  id integer [pk, increment]
+  wish_list foreign_key // links to foster_child which links to case_worker where we can 
+  theme varchar // default_undefined. could be christmas presents or school resources etc
+  product_name varchar
+  product_description varchar
+  fulfilled bool
+}
+
+Table item_status {
+  id integer [pk, increment]
+  status varchar
+  wish_item foreign_key
+}
+
+Ref organisation_address: organisation_address.organisation > organisation.id
+Ref organisation: case_worker.organisation > organisation.id
+Ref case_worker: wish_list.case_worker > case_worker.id
+Ref wish_list: wish_item.wish_list > wish_list.id
+Ref wish_item: item_status.wish_item - wish_item.id
