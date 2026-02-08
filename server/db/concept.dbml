@@ -8,48 +8,45 @@ Project peach_gardenia {
 
 Table organisations {
   id int [PK, increment]
-	name varchar(200)
-	email varchar(500)
-	tel varchar(30)
+    name varchar(200)
+    email varchar(500)
+    tel varchar(30)
 }
 
 Table addresses {
   id int [PK, increment]
-	row_1 text
-	row_2 text
-	city text
-	state_county varchar(50)
-	zip_code varchar(15)
-	country varchar(50)
-	locale varchar(10)
-	address_type t_address
-	local_email varchar(500)
-	local_tel varchar(30)
-	organisation_id int
+    row_1 text
+    row_2 text
+    city text
+    state_county varchar(50)
+    zip_code varchar(15)
+    country varchar(50)
+    locale varchar(10)
+    address_type t_address
+    local_email varchar(500)
+    local_tel varchar(30)
 }
 
 Table case_workers {
   id int [PK, increment]
   first_name varchar(200)
-	last_name varchar(200)
-	wishlists_url text // link that displays all wishlists
-	organisation_id int
-	address_id int
+    last_name varchar(200)
+    organisation_id int
+    address_id int
 }
 
 Table wishlists {
   id int [PK, increment]
   name varchar(200)
   description text
+  wishlist_url text
   created_at timestamptz [DEFAULT: 'now()']
-	case_worker_id int [not null]
+    case_worker_id int [not null]
 }
 
 Table wishlist_urls {
-  id int [PK, increment]
+  url_slug text [PK]
   wishlist_id int [NOT NULL]
-  url_slug text [NOT NULL, UNIQUE]
-  case_worker_id int
   is_primary boolean [DEFAULT: 'false']
   created_at timestamptz [DEFAULT: 'now()']
 }
@@ -60,6 +57,7 @@ Table wishlist_items {
   asin varchar(10) [NOT NULL]
   product_name varchar(100)
   product_description text
+  quantity int
   indexes {
     (wishlist_id, asin) [unique]
   }
@@ -78,12 +76,18 @@ Table wishlist_item_status {
   }
 }
 
+Table organization_addresses {
+  organization_id int [ref: > organisations.id]
+  address_id int [ref: > addresses.id]
 
-Ref Organisation_address: addresses.organisation_id > organisations.id
-Ref Case_worker_address: case_workers.address_id > addresses.id
+  indexes {
+    (organization_id, address_id) [pk]
+  }
+}
+
+
 Ref Case_worker_company: case_workers.organisation_id - organisations.id
 Ref Case_worker_wishlists: wishlists.case_worker_id > case_workers.id
 Ref Wishlist_url_referrer: wishlist_urls.wishlist_id <> wishlists.id
-Ref Wishlist_url_case_worker_referrer: wishlist_urls.case_worker_id > case_workers.id
 Ref Wishlist_item_referrer: wishlist_items.wishlist_id <> wishlists.id
 Ref Item_status_refer_wishlist_item: wishlist_item_status.wishlist_item_id < wishlist_items.id
